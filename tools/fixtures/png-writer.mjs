@@ -1,5 +1,5 @@
 // Minimal PNG encoder (8-bit RGB, filter 0) for fixtures and samples; uses Node's zlib.
-import { deflateSync } from 'node:zlib';
+import { deflateSync, inflateSync } from 'node:zlib';
 import { crc32 } from '../../src/core/crc32.js';
 
 /** @typedef {import('../../src/core/raster.js').Raster} Raster */
@@ -58,4 +58,38 @@ export function encodePng(raster, { chunks = [] } = {}) {
     at += p.length;
   }
   return out;
+}
+
+/**
+ * Decodes the PNGs written by `encodePng` (8-bit RGB, filter 0, not interlaced) so tests
+ * can analyse the committed PNG sample in Node. Not a general PNG decoder.
+ * @param {Uint8Array} bytes
+ * @returns {Raster}
+ */
+export function decodeOwnPng(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const width = view.getUint32(16);
+  const height = view.getUint32(20);
+  if (bytes[24] !== 8 || bytes[25] !== 2 || bytes[28] !== 0) {
+    throw new Error('decodeOwnPng only reads 8-bit RGB non-interlaced files');
+  }
+  /** @type {Uint8Array[]} */
+  const idat = [];
+  for (let p = 8; p + 8 <= bytes.length;) {
+    const length = view.getUint32(p);
+    const type = String.fromCharCode(...bytes.subarray(p + 4, p + 8));
+    if (type === 'IDAT') idat.push(bytes.subarray(p + 8, p + 8 + length));
+    p += 12 + length;
+  }
+  const rows = inflateSync(Buffer.concat(idat));
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    const row = y * (1 + width * 3);
+    if (rows[row] !== 0) throw new Error('decodeOwnPng only reads filter type 0');
+    for (let x = 0; x < width; x++) {
+      const s = row + 1 + x * 3;
+      data.set([rows[s], rows[s + 1], rows[s + 2], 255], (y * width + x) * 4);
+    }
+  }
+  return { width, height, data };
 }

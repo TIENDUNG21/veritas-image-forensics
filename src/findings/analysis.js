@@ -86,7 +86,7 @@ export function analysisFindings({ jpeg, layers, thumbnail }) {
       id: 'thumbnail-content',
       severity: 'warning',
       title: 'Embedded thumbnail shows different content',
-      detail: `The EXIF thumbnail differs from the image most strongly around ${where(thumbnail.region)}. The image was changed after the thumbnail was written, and the thumbnail may show the earlier version (see the Metadata tab).`,
+      detail: `The EXIF thumbnail differs from the image most strongly ${where(thumbnail.region)}. The image was changed after the thumbnail was written, and the thumbnail may show the earlier version (see the Metadata tab).`,
     });
   }
   return out;

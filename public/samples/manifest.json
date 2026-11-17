@@ -1,0 +1,86 @@
+[
+  {
+    "file": "original.jpg",
+    "bytes": 77536,
+    "id": "original",
+    "title": "Untouched",
+    "description": "A generated landscape saved once as JPEG. Nothing was edited.",
+    "layer": "ela",
+    "edited": null
+  },
+  {
+    "file": "clone.jpg",
+    "bytes": 89774,
+    "id": "clone",
+    "title": "Cloned tree",
+    "description": "One tree was copied and pasted elsewhere in the same image (copy-move).",
+    "layer": "copymove",
+    "edited": {
+      "kind": "copy-move",
+      "source": {
+        "x": 400,
+        "y": 412,
+        "w": 100,
+        "h": 136
+      },
+      "target": {
+        "x": 540,
+        "y": 480,
+        "w": 100,
+        "h": 136
+      }
+    }
+  },
+  {
+    "file": "splice.jpg",
+    "bytes": 43787,
+    "id": "splice",
+    "title": "Object added between saves",
+    "description": "Saved at quality 70, then a tree was painted in and the file saved again at quality 92.",
+    "layer": "dct",
+    "edited": {
+      "kind": "splice",
+      "region": {
+        "x": 470,
+        "y": 418,
+        "w": 101,
+        "h": 142
+      },
+      "firstQuality": 70
+    }
+  },
+  {
+    "file": "thumbnail.jpg",
+    "bytes": 78528,
+    "id": "thumbnail",
+    "title": "Edited after capture",
+    "description": "A tree was painted out days after capture; the EXIF thumbnail was left as it was.",
+    "layer": "ela",
+    "edited": {
+      "kind": "thumbnail",
+      "region": {
+        "x": 345,
+        "y": 410,
+        "w": 106,
+        "h": 162
+      }
+    }
+  },
+  {
+    "file": "export.png",
+    "bytes": 280389,
+    "id": "export",
+    "title": "Edited, exported to PNG",
+    "description": "A JPEG (quality 90) with a tree added afterwards, exported as PNG.",
+    "layer": "ela",
+    "edited": {
+      "kind": "ela",
+      "region": {
+        "x": 264,
+        "y": 277,
+        "w": 73,
+        "h": 103
+      }
+    }
+  }
+]
