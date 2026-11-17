@@ -4,3 +4,5 @@ coverage/
 node_modules/
 package-lock.json
 public/samples/
+docs/BENCHMARKS.md
+docs/EVALUATION.md
