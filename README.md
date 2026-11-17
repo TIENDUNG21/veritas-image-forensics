@@ -5,6 +5,8 @@
 [![CI](https://github.com/TIENDUNG21/veritas-image-forensics/actions/workflows/ci.yml/badge.svg)](https://github.com/TIENDUNG21/veritas-image-forensics/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-39c5cf.svg)](LICENSE)
 
+<p align="center"><img src="assets/banner.svg" width="100%" alt="Animated diagram: a scan finds a copied block of pixels and marks its source and destination"></p>
+
 Veritas reads a JPEG, PNG or WebP file in the browser and shows where it was likely edited:
 duplicated regions, areas with a different compression history, error-level and noise
 anomalies, and metadata that contradicts the pixels. The file never leaves the tab.
