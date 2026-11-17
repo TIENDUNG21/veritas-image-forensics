@@ -60,6 +60,19 @@ export function decodeCoefficients(jpeg, { maxPixels = MAX_DECODE_PIXELS, compon
   const mcusX = Math.ceil(frame.width / (8 * hmax));
   const mcusY = Math.ceil(frame.height / (8 * vmax));
 
+  // Every block needs at least 2 bits (a DC code and an end-of-block code). If the data
+  // cannot hold even a tenth of the declared blocks, refuse before allocating anything:
+  // this stops tiny crafted files from claiming huge dimensions.
+  const blocks = frame.components.reduce((n, c) => n + mcusX * mcusY * c.h * c.v, 0);
+  const dataBits = jpeg.scans.reduce((n, s) => n + (s.dataEnd - s.dataOffset) * 8, 0);
+  if (dataBits < blocks * 2 * 0.1) {
+    throw new ParseError(
+      'truncated',
+      `the image data (${dataBits >> 3} bytes) is far too short for ${frame.width} x ${frame.height} pixels`,
+      jpeg.scans[0]?.dataOffset ?? -1,
+    );
+  }
+
   /** @type {CoefficientPlane[]} */
   const planes = frame.components.map((c) => {
     const stride = mcusX * c.h;
