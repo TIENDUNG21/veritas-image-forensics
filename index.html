@@ -3,10 +3,130 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="Image forensics in the browser: JPEG structure and quality, double compression, EXIF, error level analysis, noise and copy-move detection. Images never leave the device."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>Veritas Image Forensics</title>
   </head>
   <body>
-    <main id="app">Veritas Image Forensics</main>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Veritas Image Forensics, start over">
+        <svg viewBox="0 0 64 64" width="26" height="26" aria-hidden="true">
+          <rect
+            x="5"
+            y="5"
+            width="54"
+            height="54"
+            rx="7"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path d="M32 7v50M7 32h50" stroke="currentColor" stroke-width="3" stroke-opacity="0.45" />
+          <rect x="36" y="36" width="18" height="18" rx="3" fill="currentColor" />
+        </svg>
+        <span class="brand-name">Veritas</span>
+        <span class="brand-sub">image forensics</span>
+      </a>
+      <p class="privacy">Analysis runs in this tab. Images are never uploaded.</p>
+      <div class="actions">
+        <button type="button" id="open-button" class="button primary">Open image</button>
+        <input
+          type="file"
+          id="file-input"
+          accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/avif"
+          hidden
+        />
+        <button type="button" id="export-html" class="button" disabled>Export report</button>
+        <button type="button" id="export-json" class="button" disabled>JSON</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="stage" aria-label="Image">
+        <div id="empty" class="empty">
+          <button type="button" id="dropzone" class="dropzone">
+            <span class="dropzone-title">Drop an image here, paste it, or click to choose</span>
+            <span class="dropzone-sub"
+              >JPEG, PNG, WebP, GIF, BMP or AVIF, up to 64 MB and 50 megapixels</span
+            >
+          </button>
+          <h2 class="samples-title">Or try a generated sample</h2>
+          <ul id="samples" class="samples"></ul>
+        </div>
+        <div id="busy" class="busy" hidden>
+          <p id="busy-file" class="busy-file"></p>
+          <progress id="busy-progress" max="8" value="0"></progress>
+          <p id="busy-stage" class="busy-stage"></p>
+          <button type="button" id="cancel-button" class="button">Cancel</button>
+        </div>
+        <div id="failure" class="failure" hidden>
+          <h2>This file could not be analysed</h2>
+          <p id="failure-message"></p>
+          <button type="button" id="failure-back" class="button">Choose another image</button>
+        </div>
+        <div id="viewer" class="viewer" hidden>
+          <div class="toolbar" role="toolbar" aria-label="Layers">
+            <div id="layer-buttons" class="layer-buttons"></div>
+            <label class="slider">
+              <span>Opacity</span>
+              <input id="opacity" type="range" min="0" max="1" step="0.05" />
+            </label>
+            <label id="ela-control" class="slider" hidden>
+              <span>ELA quality <output id="ela-quality-value"></output></span>
+              <input id="ela-quality" type="range" min="50" max="100" step="1" />
+            </label>
+            <button
+              type="button"
+              id="loupe-button"
+              class="button small"
+              aria-pressed="false"
+              title="Magnifier (M)"
+            >
+              Magnifier
+            </button>
+            <div class="zoom">
+              <button type="button" class="button small" data-zoom="fit">Fit</button>
+              <button type="button" class="button small" data-zoom="1">100%</button>
+              <button type="button" class="button small" data-zoom="2">200%</button>
+            </div>
+          </div>
+          <div id="canvas-wrap" class="canvas-wrap">
+            <canvas id="canvas"></canvas>
+            <div id="loupe" class="loupe" hidden>
+              <canvas id="loupe-canvas" width="176" height="176"></canvas>
+              <p id="loupe-readout" class="loupe-readout"></p>
+            </div>
+          </div>
+          <p id="layer-hint" class="layer-hint"></p>
+        </div>
+      </section>
+
+      <aside class="panel" aria-label="Results">
+        <div class="tabs" role="tablist">
+          <button type="button" role="tab" class="tab" data-tab="summary" aria-selected="true">
+            Summary
+          </button>
+          <button type="button" role="tab" class="tab" data-tab="jpeg" aria-selected="false">
+            JPEG
+          </button>
+          <button type="button" role="tab" class="tab" data-tab="metadata" aria-selected="false">
+            Metadata
+          </button>
+        </div>
+        <div id="panel-body" class="panel-body" role="tabpanel"></div>
+      </aside>
+    </main>
+
+    <footer class="statusbar">
+      <span id="status-text">No image loaded.</span>
+      <a href="https://github.com/TIENDUNG21/veritas-image-forensics" rel="noopener"
+        >Source on GitHub</a
+      >
+    </footer>
     <script type="module" src="/src/app/main.js"></script>
   </body>
 </html>

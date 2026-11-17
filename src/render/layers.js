@@ -78,10 +78,12 @@ export function renderLayer(id, result) {
     }
     case 'gradient':
       return layers.gradient ? gradient(layers.gradient) : null;
-    case 'copymove':
-      return layers.copyMove
-        ? mask(layers.copyMove.mask, layers.copyMove.width, layers.copyMove.height)
-        : null;
+    case 'copymove': {
+      const c = layers.copyMove;
+      if (!c) return null;
+      // Copy-move may run on a smaller copy than the other analyses.
+      return { ...mask(c.mask, c.width, c.height), cell: 1 / c.scale };
+    }
     case 'dct': {
       const d = layers.dct;
       if (!d?.map) return null;

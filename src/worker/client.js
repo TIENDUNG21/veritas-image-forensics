@@ -10,7 +10,7 @@
  * @typedef {import('../analysis/ela.js').ElaResult} ElaResult
  * @typedef {import('../core/raster.js').Raster} Raster
  * @typedef {{
- *   postMessage(message: WorkerRequest, transfer?: ArrayBuffer[]): void,
+ *   postMessage(message: WorkerRequest, transfer: ArrayBuffer[]): void,
  *   terminate(): void,
  *   onmessage: ((event: { data: WorkerResponse }) => void) | null,
  *   onerror: ((event: { message?: string }) => void) | null
