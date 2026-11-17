@@ -1,6 +1,6 @@
 {
   "name": "veritas-image-forensics",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Image forensics in your browser. Find what was edited.",
   "private": true,
   "license": "MIT",

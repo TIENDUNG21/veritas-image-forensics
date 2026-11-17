@@ -9,7 +9,7 @@
  */
 
 /** Kept in step with package.json by test/report/report.test.js. */
-export const VERSION = '0.1.0';
+export const VERSION = '1.0.0';
 export const SCHEMA = 'veritas-report/1';
 
 /**
