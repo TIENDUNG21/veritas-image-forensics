@@ -116,6 +116,20 @@ describe('analyzeImage', () => {
     expect(result.notices.join(' ')).toMatch(/downscaled/);
   });
 
+  it('quotes regions in full-image pixels when the analysis ran on a smaller copy', async () => {
+    const bytes = encodeJpeg(cloned(), { quality: 95 });
+    const result = await analyzeImage(bytes, {
+      name: 'small.jpg',
+      limits: { workingPixels: 19_200 },
+    });
+    expect(result.working?.scale).toBe(0.5);
+    const pair = result.layers.copyMove?.pairs[0];
+    if (!pair) throw new Error('expected the clone to survive downscaling');
+    expect(Math.abs(pair.dx - 170)).toBeLessThanOrEqual(3);
+    expect(Math.abs(pair.dy - 110)).toBeLessThanOrEqual(3);
+    expect(Math.abs(pair.source.x - 30)).toBeLessThanOrEqual(6);
+  });
+
   it('rejects empty, unknown, undecodable and oversized input with clear errors', async () => {
     expect((await errorOf(analyzeImage(new Uint8Array(0), { name: 'x' }))).code).toBe('empty');
     expect(

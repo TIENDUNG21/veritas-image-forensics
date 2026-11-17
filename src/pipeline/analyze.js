@@ -301,6 +301,8 @@ export async function analyzeImage(bytes, options) {
   }
 
   progress();
+  if (result.working && result.working.scale < 0.999)
+    toImagePixels(result, 1 / result.working.scale);
   const dims = result.image ?? { width: 0, height: 0 };
   result.findings = sortFindings([
     ...(result.metadata ? metadataFindings(result.metadata, dims) : []),
@@ -309,6 +311,32 @@ export async function analyzeImage(bytes, options) {
   if (result.metadata)
     result.notices.push(...result.metadata.warnings.map((w) => `Metadata: ${w}`));
   return result;
+}
+
+/**
+ * Pixel analyses run on the (possibly downscaled) working copy; every reported rectangle
+ * and shift is converted to full-image pixels so findings and the report quote positions
+ * in the file's own coordinates. Maps stay at working resolution.
+ * @param {AnalysisResult} result
+ * @param {number} k Full-image pixels per working pixel.
+ */
+function toImagePixels(result, k) {
+  /** @param {import('../core/regions.js').Region} r */
+  const scale = (r) => {
+    r.x = Math.round(r.x * k);
+    r.y = Math.round(r.y * k);
+    r.w = Math.round(r.w * k);
+    r.h = Math.round(r.h * k);
+  };
+  result.layers.ela?.hotspots.forEach(scale);
+  result.layers.noise?.regions.forEach(scale);
+  for (const pair of result.layers.copyMove?.pairs ?? []) {
+    pair.dx = Math.round(pair.dx * k);
+    pair.dy = Math.round(pair.dy * k);
+    scale(pair.source);
+    scale(pair.target);
+  }
+  if (result.thumbnail?.region) scale(result.thumbnail.region);
 }
 
 /**
