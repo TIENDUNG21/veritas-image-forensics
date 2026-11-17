@@ -174,8 +174,8 @@ export function detectCopyMove(raster, options = {}) {
         const ay = (positions[a] - ax) / width;
         const bx = positions[b] % width;
         const by = (positions[b] - bx) / width;
-        let dx = bx - ax;
-        let dy = by - ay;
+        const dx = bx - ax;
+        const dy = by - ay;
         if (dx * dx + dy * dy < minShift2) continue;
         if (dx < 0 || (dx === 0 && dy < 0)) visit(b, a, -dx, -dy);
         else visit(a, b, dx, dy);
