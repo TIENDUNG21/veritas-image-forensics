@@ -1,5 +1,5 @@
 import { toLuma } from '../core/raster.js';
-import { blockComponents, median, quantile, selectKth } from '../core/regions.js';
+import { blockComponents, median, sampledQuantile, selectKth } from '../core/regions.js';
 
 /**
  * @typedef {import('../core/raster.js').Raster} Raster
@@ -100,18 +100,6 @@ export function noiseMap(raster, options = {}) {
     reliable,
     regions: reliable ? inconsistentRegions(sigma, blocksW, blocksH, block, globalSigma) : [],
   };
-}
-
-/**
- * Quantile from a strided sample (exact enough for a threshold, fast on large images).
- * @param {Float32Array} values
- * @param {number} q
- */
-function sampledQuantile(values, q) {
-  const step = Math.max(1, Math.floor(values.length / 200_000));
-  const sample = new Float32Array(Math.ceil(values.length / step));
-  for (let i = 0, j = 0; i < values.length; i += step, j++) sample[j] = values[i];
-  return quantile(sample, q);
 }
 
 /**

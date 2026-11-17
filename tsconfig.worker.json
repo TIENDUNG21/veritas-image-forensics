@@ -13,6 +13,7 @@
     "src/pipeline/**/*.js",
     "src/report/**/*.js",
     "src/findings/**/*.js",
+    "src/render/**/*.js",
     "src/worker/analysis.worker.js"
   ]
 }

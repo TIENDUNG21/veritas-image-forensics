@@ -112,3 +112,16 @@ export function selectKth(values, n, k) {
   }
   return values[k];
 }
+
+/**
+ * Quantile from a strided sample of at most ~200k values: exact enough for display scaling
+ * and thresholds, and fast on 16 MP maps.
+ * @param {ArrayLike<number>} values
+ * @param {number} q
+ */
+export function sampledQuantile(values, q) {
+  const step = Math.max(1, Math.floor(values.length / 200_000));
+  const sample = new Float32Array(Math.ceil(values.length / step));
+  for (let i = 0, j = 0; i < values.length; i += step, j++) sample[j] = values[i];
+  return quantile(sample, q);
+}

@@ -12,6 +12,7 @@ const PURE = [
   'src/pipeline/**/*.js',
   'src/report/**/*.js',
   'src/findings/**/*.js',
+  'src/render/**/*.js',
 ];
 
 export default [
