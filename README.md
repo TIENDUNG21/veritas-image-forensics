@@ -67,9 +67,9 @@ on purpose, and repetitive textures such as tiles can match legitimately.
 
 ### Metadata
 
-EXIF in both byte orders (IFD0, Exif, GPS, Interoperability, IFD1 and its
-thumbnail), XMP including the edit history, ICC profile names, PNG and WebP chunks. Findings
-come from contradictions: editing software in the history, a modification date days after
+EXIF in both byte orders (IFD0, Exif, GPS, Interoperability, IFD1 and its thumbnail), XMP
+including the edit history, ICC profile names, PNG and WebP chunks. Findings come from
+contradictions: editing software in the history, a modification date days after
 capture, EXIF dimensions that differ from the image, and an embedded thumbnail whose content
 no longer matches the picture because an editor kept the camera's original.
 
@@ -139,16 +139,17 @@ party. Exported HTML reports carry their own policy that forbids scripts and net
 
 ## Limitations
 
-- **Social-media and messenger images.** Platforms resize and re-encode uploads, often at
-  quality 70 to 85 with their own tables. That erases most double-compression and ELA
-  evidence and adds uniform noise; on such files the absence of findings means little.
+- **Social-media and messenger images.** Most platforms resize and re-encode uploads with
+  their own settings. Resizing moves the 8x8 grid and re-encoding at a lower quality hides
+  earlier saves, so double-compression and ELA evidence is mostly gone; on such files the
+  absence of findings means little.
 - **False positives.** ELA and noise flag strong edges, fine texture, out-of-focus areas and
   dark noise; copy-move can match tiles, fences and other repetition. Treat every region as a
   place to look closely, not a verdict.
 - **Not detected.** Rotated, scaled or mirrored clones; colour-only edits (ELA and noise use
   luminance); a second save at the same or lower quality; edits made before the only save;
-  content generated or inpainted by a model, which has no compression or noise discontinuity
-  to find.
+  regions filled by generative inpainting, which need not leave a compression or noise
+  discontinuity.
 - **Progressive JPEG** (common on the web), arithmetic-coded, 12-bit and CMYK JPEG are
   decoded by the browser instead, so the DCT analysis is unavailable for them. HEIC and TIFF
   are refused with a message to convert first.
