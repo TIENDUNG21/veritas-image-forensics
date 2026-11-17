@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "WebWorker"],
+    "types": []
+  },
+  "include": [
+    "src/core/**/*.js",
+    "src/jpeg/**/*.js",
+    "src/exif/**/*.js",
+    "src/container/**/*.js",
+    "src/analysis/**/*.js",
+    "src/pipeline/**/*.js",
+    "src/report/**/*.js",
+    "src/worker/analysis.worker.js"
+  ]
+}

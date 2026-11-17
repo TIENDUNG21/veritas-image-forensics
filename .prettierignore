@@ -1,0 +1,6 @@
+dist/
+coverage/
+.cache/
+node_modules/
+package-lock.json
+public/samples/
