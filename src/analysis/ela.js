@@ -29,9 +29,10 @@ const MIN_HOTSPOT_BLOCKS = 4;
  * absolute difference is measured per pixel. Content that was already saved at that quality
  * barely changes; content added after the last save changes much more.
  *
- * Luminance-only avoids the colour-conversion rounding noise of an RGB round trip, which in
- * measurements on synthetic splices roughly doubled the contrast between pasted and original
- * content (see docs/adr/0002). Colour-only edits are therefore not visible here.
+ * Luminance-only avoids the rounding noise of the RGB -> YCbCr -> RGB conversion and of
+ * chroma subsampling, which an RGB round trip adds to every pixel and which lowers the
+ * contrast between pasted and original content (see docs/adr/0002). Colour-only edits are
+ * therefore not visible here.
  *
  * @param {Raster} raster
  * @param {{ quality?: number }} [options]

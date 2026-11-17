@@ -34,7 +34,7 @@ const MIN_REGION_BLOCKS = 4;
  * Local noise level map. Each pixel is convolved with the kernel
  * [1 -2 1; -2 4 -2; 1 -2 1], which cancels flat areas, ramps and most texture and leaves
  * mostly sensor/compression noise. Strong edges are excluded, then the noise standard
- * deviation is estimated per block from the median response (robust to the edges that
+ * deviation is estimated per block from the median response (insensitive to the edges that
  * remain). Pasted, retouched or smoothed regions often carry a different noise level.
  *
  * @param {Raster} raster
