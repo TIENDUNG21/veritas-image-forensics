@@ -33,14 +33,16 @@ import { LUMA_BASE, ZIGZAG } from '../jpeg/tables.js';
  */
 
 const COEFFS = 16;
+/** Smallest reported clone, in analysis pixels per side. */
+const MIN_SIDE = 16;
 const DEFAULTS = {
   maxSide: COPY_MOVE_MAX_SIDE,
   minShift: 16,
-  minVotes: 40,
+  minVotes: 100,
   window: 8,
   tolerance: 1,
   factor: 0.5,
-  minStd: 2.5,
+  minStd: 3,
 };
 
 /** DCT basis images for the first COEFFS zigzag positions. */
@@ -297,6 +299,8 @@ export function detectCopyMove(raster, options = {}) {
     }
     const inv = 1 / realScale;
     for (const box of boxes.values()) {
+      // Thin slivers come from repetitive texture along one direction, not from cloning.
+      if (box.sx1 - box.sx0 < MIN_SIDE || box.sy1 - box.sy0 < MIN_SIDE) continue;
       result.pairs.push({
         dx: Math.round(shift.dx * inv),
         dy: Math.round(shift.dy * inv),
