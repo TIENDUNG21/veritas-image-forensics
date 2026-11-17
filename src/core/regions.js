@@ -81,3 +81,34 @@ export function quantile(values, q) {
   const sorted = Float64Array.from(values).sort();
   return sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(q * (sorted.length - 1))))];
 }
+
+/**
+ * k-th smallest of the first `n` values (Hoare quickselect, average O(n)). Reorders them.
+ * @param {Float32Array} values
+ * @param {number} n
+ * @param {number} k 0-based rank, k < n.
+ */
+export function selectKth(values, n, k) {
+  let lo = 0;
+  let hi = n - 1;
+  while (lo < hi) {
+    const pivot = values[(lo + hi) >> 1];
+    let i = lo;
+    let j = hi;
+    while (i <= j) {
+      while (values[i] < pivot) i++;
+      while (values[j] > pivot) j--;
+      if (i <= j) {
+        const t = values[i];
+        values[i] = values[j];
+        values[j] = t;
+        i++;
+        j--;
+      }
+    }
+    if (k <= j) hi = j;
+    else if (k >= i) lo = i;
+    else return values[k];
+  }
+  return values[k];
+}

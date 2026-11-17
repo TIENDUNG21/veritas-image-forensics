@@ -1,5 +1,5 @@
 import { toLuma } from '../core/raster.js';
-import { blockComponents, median, quantile } from '../core/regions.js';
+import { blockComponents, median, quantile, selectKth } from '../core/regions.js';
 
 /**
  * @typedef {import('../core/raster.js').Raster} Raster
@@ -7,26 +7,35 @@ import { blockComponents, median, quantile } from '../core/regions.js';
  * @typedef {{
  *   width: number, height: number, residual: Float32Array, block: number,
  *   blocksW: number, blocksH: number, sigma: Float32Array, globalSigma: number,
- *   regions: Region[]
+ *   reliable: boolean, regions: Region[]
  * }} NoiseResult
  *   `residual` is |Laplacian-difference response| per pixel; `sigma` the estimated noise
- *   standard deviation per block (NaN where too few smooth pixels remain).
+ *   standard deviation per block (NaN where too few smooth pixels remain). `reliable` is
+ *   false when the image keeps too little noise for the comparison to mean anything.
  */
 
-/** sqrt(pi/2) / 6: scales mean |N * I| to a Gaussian standard deviation (Immerkaer 1996). */
-const SCALE = Math.sqrt(Math.PI / 2) / 6;
+/**
+ * The kernel's weights square-sum to 36, so for Gaussian noise of deviation s the response
+ * has deviation 6s; the median of its absolute value is 0.6745 * 6s.
+ */
+const SCALE = 1 / (0.6745 * 6);
+/**
+ * Below this global noise level (luma levels) the image was smoothed or compressed so much
+ * that the map mostly shows content (edges, gradients), so no regions are reported.
+ */
+const MIN_RELIABLE_SIGMA = 1;
 /** Share of strongest-gradient pixels excluded as edges (Tai and Yang 2008 use 10%). */
 const EDGE_SHARE = 0.1;
 /** Block noise counts as inconsistent beyond this ratio to the image median (either way). */
 const RATIO = 2;
-const MIN_REGION_BLOCKS = 3;
+const MIN_REGION_BLOCKS = 4;
 
 /**
  * Local noise level map. Each pixel is convolved with the kernel
  * [1 -2 1; -2 4 -2; 1 -2 1], which cancels flat areas, ramps and most texture and leaves
  * mostly sensor/compression noise. Strong edges are excluded, then the noise standard
- * deviation is estimated per block. Pasted, retouched or smoothed regions often carry a
- * different noise level from the rest of the photo.
+ * deviation is estimated per block from the median response (robust to the edges that
+ * remain). Pasted, retouched or smoothed regions often carry a different noise level.
  *
  * @param {Raster} raster
  * @param {{ block?: number }} [options] Block size in pixels (default 16, or 32 above 4 MP).
@@ -61,23 +70,24 @@ export function noiseMap(raster, options = {}) {
   const blocksW = Math.ceil(width / block);
   const blocksH = Math.ceil(height / block);
   const sigma = new Float32Array(blocksW * blocksH).fill(NaN);
+  const values = new Float32Array(block * block);
   for (let by = 0; by < blocksH; by++) {
     for (let bx = 0; bx < blocksW; bx++) {
-      let sum = 0;
       let n = 0;
       for (let y = Math.max(1, by * block); y < Math.min(height - 1, (by + 1) * block); y++) {
         for (let x = Math.max(1, bx * block); x < Math.min(width - 1, (bx + 1) * block); x++) {
           const i = y * width + x;
-          if (gradient[i] > edgeLimit) continue;
-          sum += residual[i];
-          n++;
+          if (gradient[i] <= edgeLimit) values[n++] = residual[i];
         }
       }
-      if (n >= (block * block) / 4) sigma[by * blocksW + bx] = (SCALE * sum) / n;
+      if (n >= (block * block) / 4) {
+        sigma[by * blocksW + bx] = SCALE * selectKth(values, n, n >> 1);
+      }
     }
   }
   const valid = [...sigma].filter((s) => Number.isFinite(s));
   const globalSigma = median(valid);
+  const reliable = globalSigma >= MIN_RELIABLE_SIGMA;
   return {
     width,
     height,
@@ -87,7 +97,8 @@ export function noiseMap(raster, options = {}) {
     blocksH,
     sigma,
     globalSigma,
-    regions: inconsistentRegions(sigma, blocksW, blocksH, block, globalSigma),
+    reliable,
+    regions: reliable ? inconsistentRegions(sigma, blocksW, blocksH, block, globalSigma) : [],
   };
 }
 
@@ -114,7 +125,6 @@ function sampledQuantile(values, q) {
  * @returns {Region[]}
  */
 function inconsistentRegions(sigma, bw, bh, block, global) {
-  if (!(global > 0.25)) return [];
   /** @type {Region[]} */
   const regions = [];
   for (const direction of [1, -1]) {

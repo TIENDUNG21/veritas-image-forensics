@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { noiseMap } from '../../src/analysis/noise.js';
 import { addNoise, solid, texture } from '../../tools/fixtures/synth.mjs';
+import { decodeJpegJs, encodeJpegJs } from '../helpers/jpegjs.js';
 
 const W = 256;
 const square = { x: 96, y: 96, w: 64, h: 64 };
@@ -89,6 +90,17 @@ describe('noiseMap', () => {
     const [inside, outside] = insideOutside(noise);
     expect(inside / outside).toBeLessThan(0.5);
     expect(noise.regions.some((g) => g.score < 1)).toBe(true);
+  });
+
+  it('does not report regions when compression has removed the noise', () => {
+    const r = texture(W, W, 3, { grain: 0 });
+    addNoise(r, 1, 2);
+    addNoise(r, 6, 3, square);
+    const smooth = decodeJpegJs(encodeJpegJs(r, 85));
+    const noise = noiseMap(smooth);
+    expect(noise.reliable).toBe(false);
+    expect(noise.regions).toEqual([]);
+    expect(noise.sigma.length).toBe(noise.blocksW * noise.blocksH);
   });
 
   it('reports nothing for a consistent image and zero for a flat one', () => {
