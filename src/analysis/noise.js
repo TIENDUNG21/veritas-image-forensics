@@ -1,9 +1,9 @@
 import { toLuma } from '../core/raster.js';
-import { blockComponents, median, quantile } from './regions.js';
+import { blockComponents, median, quantile } from '../core/regions.js';
 
 /**
  * @typedef {import('../core/raster.js').Raster} Raster
- * @typedef {import('./regions.js').Region} Region
+ * @typedef {import('../core/regions.js').Region} Region
  * @typedef {{
  *   width: number, height: number, residual: Float32Array, block: number,
  *   blocksW: number, blocksH: number, sigma: Float32Array, globalSigma: number,

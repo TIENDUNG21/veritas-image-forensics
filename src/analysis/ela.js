@@ -1,11 +1,11 @@
 import { toLuma } from '../core/raster.js';
 import { LUMA_BASE, scaleTable } from '../jpeg/tables.js';
 import { requantize } from './jpegsim.js';
-import { blockComponents, median } from './regions.js';
+import { blockComponents, median } from '../core/regions.js';
 
 /**
  * @typedef {import('../core/raster.js').Raster} Raster
- * @typedef {import('./regions.js').Region} Region
+ * @typedef {import('../core/regions.js').Region} Region
  * @typedef {{
  *   quality: number, width: number, height: number, map: Float32Array,
  *   blocksW: number, blocksH: number, blockMeans: Float32Array,

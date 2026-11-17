@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { errorLevel } from '../../src/analysis/ela.js';
-import { blockComponents } from '../../src/analysis/regions.js';
+import { blockComponents } from '../../src/core/regions.js';
 import { copyRect, solid, texture } from '../../tools/fixtures/synth.mjs';
 import { decodeJpegJs, encodeJpegJs } from '../helpers/jpegjs.js';
 
