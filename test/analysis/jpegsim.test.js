@@ -1,33 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { jpegRoundTrip } from '../../src/analysis/jpegsim.js';
+import { requantize } from '../../src/analysis/jpegsim.js';
 import { createRaster, downscaleToFit, resizeBox, toLuma } from '../../src/core/raster.js';
+import { LUMA_BASE, scaleTable } from '../../src/jpeg/tables.js';
 import { texture } from '../../tools/fixtures/synth.mjs';
 import { decodeJpegJs, encodeJpegJs } from '../helpers/jpegjs.js';
 
-/** @typedef {import('../../src/core/raster.js').Raster} Raster */
-
 /**
- * @param {Raster} a
- * @param {Raster} b
+ * @param {Float32Array} a
+ * @param {Float32Array} b
  */
 function meanDiff(a, b) {
   let sum = 0;
-  for (let i = 0; i < a.data.length; i += 4) {
-    for (let c = 0; c < 3; c++) sum += Math.abs((a.data[i + c] ?? 0) - (b.data[i + c] ?? 0));
-  }
-  return sum / ((a.data.length / 4) * 3);
+  for (let i = 0; i < a.length; i++) sum += Math.abs((a[i] ?? 0) - (b[i] ?? 0));
+  return sum / a.length;
 }
 
 const image = texture(70, 52, 9);
+const luma = toLuma(image);
+/** @param {Float32Array} plane @param {number} q */
+const resave = (plane, q) => requantize(plane, 70, 52, scaleTable(LUMA_BASE, q));
 
 describe('raster helpers', () => {
   it('computes BT.601 luma', () => {
     const r = createRaster(3, 1);
     r.data.set([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255]);
-    const luma = toLuma(r);
-    expect(luma[0]).toBeCloseTo(76.245, 3);
-    expect(luma[1]).toBeCloseTo(149.685, 3);
-    expect(luma[2]).toBeCloseTo(29.07, 3);
+    const y = toLuma(r);
+    expect(y[0]).toBeCloseTo(76.245, 3);
+    expect(y[1]).toBeCloseTo(149.685, 3);
+    expect(y[2]).toBeCloseTo(29.07, 3);
   });
 
   it('averages areas when shrinking', () => {
@@ -50,25 +50,20 @@ describe('raster helpers', () => {
   });
 });
 
-describe('jpegRoundTrip', () => {
-  it('is nearly lossless at quality 100', () => {
-    const out = jpegRoundTrip(image, 100);
-    expect([out.width, out.height]).toEqual([70, 52]);
-    expect(meanDiff(out, image)).toBeLessThan(1);
-    expect(out.data[3]).toBe(255);
+describe('requantize', () => {
+  it('is nearly lossless with all steps equal to 1', () => {
+    expect(meanDiff(resave(luma, 100), luma)).toBeLessThan(0.5);
   });
 
   it('loses more at lower quality', () => {
-    expect(meanDiff(jpegRoundTrip(image, 50), image)).toBeGreaterThan(
-      meanDiff(jpegRoundTrip(image, 90), image),
-    );
+    expect(meanDiff(resave(luma, 50), luma)).toBeGreaterThan(meanDiff(resave(luma, 90), luma));
   });
 
-  it('barely changes an image that was already saved at the same quality', () => {
-    const saved = decodeJpegJs(encodeJpegJs(image, 75));
-    const again = meanDiff(jpegRoundTrip(saved, 75), saved);
-    const lower = meanDiff(jpegRoundTrip(saved, 50), saved);
-    expect(again).toBeLessThan(1.5);
-    expect(lower).toBeGreaterThan(again * 2);
+  it('barely changes a plane that was already saved at the same quality', () => {
+    const saved = toLuma(decodeJpegJs(encodeJpegJs(image, 75)));
+    const again = meanDiff(resave(saved, 75), saved);
+    const fresh = meanDiff(resave(luma, 75), luma);
+    expect(again).toBeLessThan(0.6);
+    expect(fresh).toBeGreaterThan(again * 3);
   });
 });
